@@ -1,37 +1,56 @@
 # 🤖 LeRobot Instruction Synthesis
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-## 🚀 Overview
+## 🎯 Rich Caption Generation for Robot Learning
 
-LeRobot Instruction Synthesis is an advanced tool that leverages Large Language Models (LLMs) to automatically generate multi-level natural language instructions from robot trajectory data. This project enhances robotic datasets by transforming raw sensor data into rich, hierarchical task descriptions that can improve robot learning and human-robot interaction.
+Transform simple robot action datasets into richly annotated training data using state-of-the-art multi-modal LLMs. This project takes existing robot trajectories with basic single-line descriptions and generates detailed, multi-level instructions that enable training more sophisticated robot control models.
 
-### 🎯 Key Features
+### 🌟 Key Innovation
 
-- **Multi-Level Instruction Generation**: Creates instructions at three levels of granularity:
-  - **High-level**: Overall task goals (e.g., "Pick up the cube and transfer it to the other arm")
-  - **Mid-level**: Task phases and subtasks (e.g., "Approach the object", "Grasp", "Transfer")
-  - **Low-level**: Detailed action sequences with timing information
+Most robot datasets come with minimal descriptions like "pick up the cube" or "open the drawer". This severely limits the ability to train robots that can understand complex, narrative-style commands. **LeRobot Instruction Synthesis** solves this by:
 
-- **Trajectory Analysis & Summarization**: Automatically analyzes robot movements and generates comprehensive natural language summaries
+- 📹 **Analyzing robot trajectory videos** using multi-modal LLMs (Gemini, Claude 3.5, GPT-4o)
+- 📝 **Generating rich, hierarchical captions** at multiple levels of detail
+- 🎭 **Creating narrative-style instructions** that describe not just what to do, but how and why
+- 🔄 **Enhancing existing datasets** without requiring new robot demonstrations
 
-- **Negative Example Generation**: Uses LLM knowledge to generate "what not to do" examples for safer robot training
+### 📊 Example Transformation
 
-- **Multiple Interfaces**:
-  - Command-line interface for batch processing
-  - REST API server for integration with other systems
-  - Web interface for interactive exploration
+**Before (Original Dataset):**
+```
+Task: "Pick up cube"
+```
 
-## 🏆 Hackathon Impact
+**After (Enhanced with our tool):**
+```
+High-Level: "Pick up the red cube from the table and transfer it to the blue container"
 
-This project addresses a critical challenge in robotics: the lack of rich, descriptive data for training more interpretable and safer robotic systems. By automatically generating natural language descriptions from trajectory data, we enable:
+Mid-Level:
+1. "Approach the red cube on the table surface"
+2. "Position the gripper above the cube and align for optimal grasp"
+3. "Close the gripper to secure the cube"
+4. "Lift and transport the cube to the blue container"
+5. "Lower the cube into the container and release"
 
-- Better human understanding of robot behaviors
-- Improved safety through negative example generation
-- Enhanced robot learning through multi-modal (vision + language) training
-- Easier debugging and analysis of robot policies
+Low-Level:
+- "Move arm forward 15cm while maintaining 10cm height above table"
+- "Rotate wrist 45° clockwise for perpendicular approach angle"
+- "Lower gripper 8cm until 2cm above cube surface"
+- [... detailed action sequences ...]
+```
+
+## 🚀 Features
+
+- **Multi-Modal LLM Integration**: Leverages vision-language models to understand robot actions from video
+- **Hierarchical Instruction Generation**: Creates high-level goals, mid-level subtasks, and low-level action sequences
+- **Negative Example Generation**: Produces contrastive examples for more robust training
+- **Trajectory Summarization**: Generates concise descriptions of entire robot episodes
+- **Web Interface**: User-friendly Flask server and Gradio UI for dataset exploration
+- **Batch Processing**: Efficiently process entire datasets with progress tracking
 
 ## 🛠️ Installation
 
@@ -60,110 +79,70 @@ export GOOGLE_API_KEY="your-api-key-here"
 # Or create a .env file with: GOOGLE_API_KEY=your-api-key-here
 ```
 
-## 📖 Usage
+## 🎮 Usage
 
 ### Command Line Interface
 
-#### Generate trajectory summary:
+Generate rich captions for your robot dataset:
+
 ```bash
-python -m lesynthesis.enrich_with_llm summarize \
-    --dataset_repo_id="lerobot/aloha_sim_transfer_cube_human" \
-    --episode_index=0
+# Basic usage - enhance a single episode
+lesynthesis generate-instructions --dataset lerobot/pusht --episode 0
+
+# Process entire dataset with rich captions
+lesynthesis enrich-dataset --dataset lerobot/pusht --output enhanced_pusht
+
+# Generate with specific detail level
+lesynthesis generate-instructions --dataset lerobot/pusht --episode 0 --detail-level high
 ```
-
-#### Generate negative examples:
-```bash
-python -m lesynthesis.enrich_with_llm generate_negatives \
-    --dataset_repo_id="lerobot/aloha_sim_transfer_cube_human"
-```
-
-#### Generate multi-level instructions:
-```bash
-python -m lesynthesis.enrich_with_llm generate_instructions \
-    --dataset_repo_id="lerobot/aloha_sim_transfer_cube_human" \
-    --episode_index=0
-```
-
-### Web Server
-
-Start the REST API server:
-```bash
-python -m lesynthesis.enrich_with_llm_server
-```
-
-The server will be available at `http://localhost:7777` with endpoints for:
-- `/api/load_dataset` - Load a dataset
-- `/api/summarize_trajectory/<episode>` - Get trajectory summary
-- `/api/generate_negatives` - Generate negative examples
-- `/api/generate_instructions/<episode>` - Get multi-level instructions
 
 ### Python API
 
 ```python
-from lesynthesis.enrich_with_llm import LLMEnrichmentTool
+from lesynthesis import LLMEnrichmentTool
 
 # Initialize the tool
-tool = LLMEnrichmentTool(model_name="gemini-2.0-flash-exp")
+enrichment_tool = LLMEnrichmentTool()
 
-# Generate multi-level instructions
-instructions = tool.generate_instructions(
-    dataset_repo_id="lerobot/aloha_sim_transfer_cube_human",
+# Generate rich captions for a robot trajectory
+instructions = enrichment_tool.generate_instructions(
+    dataset_repo_id="lerobot/pusht",
     episode_index=0
 )
 
-print(f"High-level: {instructions['high_level']}")
-print(f"Mid-level phases: {instructions['mid_level']}")
-print(f"Low-level actions: {instructions['low_level']}")
+# Access multi-level captions
+print(f"Goal: {instructions['high_level']}")
+print(f"Steps: {instructions['mid_level']}")
+print(f"Actions: {instructions['low_level']}")
 ```
 
-## 🏗️ Architecture
+### Web Interface
 
-The system consists of three main components:
+Launch the interactive web server to explore and annotate datasets:
 
-1. **Trajectory Analyzer**: Processes robot sensor data to identify key phases and action patterns
-2. **LLM Interface**: Communicates with Google's Gemini models to generate natural language
-3. **Multi-Interface Layer**: Provides CLI, REST API, and web access
-
-```
-┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│  Robot Dataset  │────▶│ Trajectory       │────▶│ LLM Interface   │
-│  (HuggingFace)  │     │ Analyzer         │     │ (Gemini)        │
-└─────────────────┘     └──────────────────┘     └─────────────────┘
-                                                           │
-                                                           ▼
-                        ┌─────────────────────────────────────────┐
-                        │        Generated Instructions          │
-                        │  • High-level task description        │
-                        │  • Mid-level phase breakdown          │
-                        │  • Low-level action sequences         │
-                        └─────────────────────────────────────────┘
-```
-
-## 📊 Example Output
-
-### High-Level Instruction:
-> "Pick up the cube with the right arm and transfer it to the left arm"
-
-### Mid-Level Phases:
-> 1. Right arm approaches and positions for grasping the cube
-> 2. Right arm grasps the cube
-> 3. Right arm lifts the cube and maneuvers it to the transfer zone
-> 4. Transfer the cube from the right arm to the left arm
-
-### Low-Level Actions:
-> - **0.00s**: Right Arm Initial Motion - Move from home position towards cube vicinity
-> - **0.80s**: Right Arm Pre-Grasp Alignment - Refine end-effector position for precise alignment
-> - **1.60s**: Right Arm Approach - Lower arm and position gripper around cube
-> - **3.20s**: Right Arm Grasp - Close gripper to secure the cube
-> - **4.00s**: Right Arm Lift and Transfer - Lift cube and move to transfer location
-> - **4.80s**: Dual Arm Transfer - Coordinate both arms for cube handoff
-
-## 🧪 Testing
-
-Run the test suite:
 ```bash
-pytest tests/ -v
+# Start the Flask server
+lesynthesis-server --port 5001
+
+# Or use the Gradio interface
+lesynthesis gradio --dataset lerobot/pusht
 ```
+
+## 🔧 How It Works
+
+1. **Video Analysis**: Extracts frames from robot trajectory videos
+2. **Multi-Modal Understanding**: Sends video data to LLMs with vision capabilities
+3. **Structured Generation**: Uses carefully crafted prompts to generate hierarchical instructions
+4. **Quality Assurance**: Validates generated captions for consistency and completeness
+5. **Dataset Enhancement**: Saves enriched annotations alongside original data
+
+## 🎯 Use Cases
+
+- **Training Language-Conditioned Policies**: Use rich captions to train robots that understand complex commands
+- **Dataset Augmentation**: Enhance existing datasets without collecting new demonstrations
+- **Human-Robot Interaction**: Generate natural language explanations of robot behaviors
+- **Curriculum Learning**: Use hierarchical instructions for progressive skill learning
+- **Sim-to-Real Transfer**: Bridge the gap with detailed action descriptions
 
 ## 🤝 Contributing
 
@@ -175,9 +154,22 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Built on top of the [LeRobot](https://github.com/huggingface/lerobot) ecosystem
-- Powered by Google's Gemini models
-- Inspired by the need for richer robotic datasets in the research community
+- Built on top of [🤗 LeRobot](https://github.com/huggingface/lerobot) for robot learning
+- Powered by state-of-the-art multi-modal LLMs (Gemini, Claude, GPT-4)
+- Inspired by the need for richer robot training data in the community
+
+## 📚 Citation
+
+If you use this tool in your research, please cite:
+
+```bibtex
+@software{lerobot_instruction_synthesis,
+  title = {LeRobot Instruction Synthesis: Rich Caption Generation for Robot Learning},
+  author = {Antoniou, Antreas},
+  year = {2024},
+  url = {https://github.com/AntreasAntoniou/lerobot-instruction-synthesis}
+}
+```
 
 ## 📞 Contact
 
