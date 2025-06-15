@@ -601,7 +601,7 @@ Requirements:
 def main():
     """Main entry point for the script."""
     init_logging()
-    fire.Fire(LLMEnrichmentTool)
+    fire.Fire(CaptionSynthesizer)
 
 
 if __name__ == "__main__":

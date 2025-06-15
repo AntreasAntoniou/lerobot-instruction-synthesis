@@ -15,7 +15,7 @@ from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
 from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
 
-from lesynthesis.enrich_with_llm import LLMEnrichmentTool
+from lesynthesis.synthesizer import CaptionSynthesizer
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -23,7 +23,7 @@ CORS(app)  # Enable CORS for all routes
 # Global state
 current_dataset = None
 current_dataset_id = None
-llm_tool = LLMEnrichmentTool()
+synthesizer = CaptionSynthesizer()
 
 
 @app.route("/")
@@ -153,7 +153,7 @@ def get_motor_plot(episode_index):
 @app.route("/api/summarize_trajectory/<int:episode_index>")
 def summarize_trajectory(episode_index):
     """Generate trajectory summary."""
-    global current_dataset_id, llm_tool
+    global current_dataset_id, synthesizer
 
     if current_dataset_id is None:
         return jsonify({"success": False, "error": "No dataset loaded"})

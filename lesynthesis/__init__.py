@@ -1,6 +1,6 @@
 """LeSynthesis - Rich Caption Generation for Robot Learning."""
 
-from lesynthesis.enrich_with_llm import LLMEnrichmentTool
+from lesynthesis.synthesizer import CaptionSynthesizer
 
-__all__ = ["LLMEnrichmentTool"]
+__all__ = ["CaptionSynthesizer"]
 __version__ = "0.1.0"
