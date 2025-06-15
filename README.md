@@ -174,8 +174,9 @@ If you use this tool in your research, please cite:
 ## 📞 Contact
 
 - **Author**: Antreas Antoniou
-- **Email**: [your-email@example.com]
+- **Email**: [iam@antreas.io](mailto:iam@antreas.io)
 - **GitHub**: [@AntreasAntoniou](https://github.com/AntreasAntoniou)
+- **Event Website**: [lerobot-edinburgh.com](https://lerobot-edinburgh.com)
 
 ---
 
