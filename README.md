@@ -81,19 +81,33 @@ export GOOGLE_API_KEY="your-api-key-here"
 
 ## 🎮 Usage
 
+### Available Commands
+
+After installation, you'll have access to two main commands:
+
+1. **`lesynthesis`** - Main CLI for generating instructions
+   - `generate_instructions` - Generate multi-level instructions for an episode
+   - `summarize` - Create a summary of a trajectory
+   - `generate_negatives` - Generate negative examples (pitfalls) for tasks
+
+2. **`lesynthesis-server`** - Web interface for interactive exploration
+
 ### Command Line Interface
 
 Generate rich captions for your robot dataset:
 
 ```bash
-# Basic usage - enhance a single episode
-lesynthesis generate-instructions --dataset lerobot/pusht --episode 0
+# Generate instructions for a specific episode
+lesynthesis generate_instructions lerobot/pusht --episode_index 0
 
-# Process entire dataset with rich captions
-lesynthesis enrich-dataset --dataset lerobot/pusht --output enhanced_pusht
+# Generate trajectory summary
+lesynthesis summarize lerobot/pusht --episode_index 0
 
-# Generate with specific detail level
-lesynthesis generate-instructions --dataset lerobot/pusht --episode 0 --detail-level high
+# Generate negative examples (pitfalls) for all tasks in dataset
+lesynthesis generate_negatives lerobot/pusht
+
+# Using a different model
+lesynthesis --model_name gemini-2.5-pro-preview-03-25 generate_instructions lerobot/pusht
 ```
 
 ### Python API
@@ -121,12 +135,17 @@ print(f"Actions: {instructions['low_level']}")
 Launch the interactive web server to explore and annotate datasets:
 
 ```bash
-# Start the Flask server
+# Start the web server (default port 7777)
+lesynthesis-server
+
+# Start on a custom port
 lesynthesis-server --port 5001
 
-# Or use the Gradio interface
-lesynthesis gradio --dataset lerobot/pusht
+# With custom host and debug mode
+lesynthesis-server --port 5001 --host 0.0.0.0 --debug
 ```
+
+Then open http://localhost:7777 (or your custom port) in your browser.
 
 ## 🔧 How It Works
 
@@ -143,6 +162,22 @@ lesynthesis gradio --dataset lerobot/pusht
 - **Human-Robot Interaction**: Generate natural language explanations of robot behaviors
 - **Curriculum Learning**: Use hierarchical instructions for progressive skill learning
 - **Sim-to-Real Transfer**: Bridge the gap with detailed action descriptions
+
+## 🔍 Troubleshooting
+
+### Common Issues
+
+1. **"No module named 'lesynthesis'"**
+   - Make sure you installed the package: `pip install -e .`
+   - Check that you're in the correct virtual environment
+
+2. **"Google API key is required"**
+   - Set your API key: `export GOOGLE_API_KEY="your-key"`
+   - Or create a `.env` file with: `GOOGLE_API_KEY=your-key`
+
+3. **Web server not starting**
+   - Check if port is already in use
+   - Try a different port: `lesynthesis-server --port 8080`
 
 ## 🤝 Contributing
 
