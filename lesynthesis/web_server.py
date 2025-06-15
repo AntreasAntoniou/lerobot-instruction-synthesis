@@ -168,16 +168,16 @@ def summarize_trajectory(episode_index):
             else:
                 captured_text.append(str(args[0]) if args else "")
 
-        original_print = llm_tool._console.print
-        llm_tool._console.print = capture_print
+        original_print = synthesizer._console.print
+        synthesizer._console.print = capture_print
 
         # Generate summary
-        llm_tool.summarize(
+        synthesizer.summarize(
             dataset_repo_id=current_dataset_id, episode_index=episode_index
         )
 
         # Restore original print
-        llm_tool._console.print = original_print
+        synthesizer._console.print = original_print
 
         # Extract summary
         summary = ""
@@ -195,13 +195,13 @@ def summarize_trajectory(episode_index):
 @app.route("/api/generate_negatives")
 def generate_negatives():
     """Generate negative examples."""
-    global current_dataset_id, llm_tool
+    global current_dataset_id, synthesizer
 
     if current_dataset_id is None:
         return jsonify({"success": False, "error": "No dataset loaded"})
 
     try:
-        negatives = llm_tool.generate_negatives(
+        negatives = synthesizer.generate_negatives(
             dataset_repo_id=current_dataset_id
         )
 
@@ -214,7 +214,7 @@ def generate_negatives():
 @app.route("/api/generate_instructions/<int:episode_index>")
 def generate_instructions(episode_index):
     """Generate multi-level instructions for an episode."""
-    global current_dataset_id, llm_tool
+    global current_dataset_id, synthesizer
 
     if current_dataset_id is None:
         return jsonify({"success": False, "error": "No dataset loaded"})
