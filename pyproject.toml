@@ -7,7 +7,7 @@ name = "lerobot-instruction-synthesis"
 version = "0.1.0"
 description = "Automatically generate multi-level natural language instructions from robot trajectory data using LLMs"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [
     {name = "Antreas Antoniou", email = "iam@antreas.io"},
@@ -33,10 +33,9 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Scientific/Engineering :: Human Machine Interfaces",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -108,7 +107,7 @@ lesynthesis = ["*.md"]
 
 [tool.black]
 line-length = 100
-target-version = ['py39', 'py310', 'py311']
+target-version = ['py311', 'py312', 'py313']
 include = '\.pyi?$'
 extend-exclude = '''
 /(
@@ -135,7 +134,7 @@ ensure_newline_before_comments = true
 
 [tool.ruff]
 line-length = 100
-target-version = "py39"
+target-version = "py311"
 select = [
     "E",  # pycodestyle errors
     "W",  # pycodestyle warnings
