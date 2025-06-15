@@ -254,7 +254,12 @@ def main(port: int = 7777, host: str = "0.0.0.0", debug: bool = False):
     app.run(debug=debug, host=host, port=port)
 
 
-if __name__ == "__main__":
+def fire_main():
+    """Entry point for Fire CLI."""
     import fire
 
     fire.Fire(main)
+
+
+if __name__ == "__main__":
+    fire_main()

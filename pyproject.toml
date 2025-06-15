@@ -96,7 +96,7 @@ all = [
 
 [project.scripts]
 lesynthesis = "lesynthesis.synthesizer:main"
-lesynthesis-server = "lesynthesis.web_server:main"
+lesynthesis-server = "lesynthesis.web_server:fire_main"
 
 [tool.setuptools]
 packages = ["lesynthesis"]
