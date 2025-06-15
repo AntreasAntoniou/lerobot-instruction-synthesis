@@ -221,7 +221,7 @@ def generate_instructions(episode_index):
 
     try:
         # Generate instructions
-        instructions = llm_tool.generate_instructions(
+        instructions = synthesizer.generate_instructions(
             dataset_repo_id=current_dataset_id, episode_index=episode_index
         )
 
