@@ -19,7 +19,7 @@ class TestReadmeExamples:
     def mock_model(self):
         """Create a mock model for testing."""
         with patch(
-            "lesynthesis.enrich_with_llm._setup_generative_model"
+            "lesynthesis.synthesizer._setup_generative_model"
         ) as mock:
             mock_model = Mock()
 
@@ -68,7 +68,7 @@ Release cube | Open gripper to release cube | 4.0s
         """Test the basic usage example from README."""
         # Mock the dataset
         with patch(
-            "lesynthesis.enrich_with_llm.LeRobotDataset"
+            "lesynthesis.synthesizer.LeRobotDataset"
         ) as mock_dataset:
             # Setup mock dataset
             mock_dataset.return_value = Mock(
@@ -141,7 +141,7 @@ Release cube | Open gripper to release cube | 4.0s
     def test_python_api_example(self, enrichment_tool):
         """Test the Python API example from README."""
         with patch(
-            "lesynthesis.enrich_with_llm.LeRobotDataset"
+            "lesynthesis.synthesizer.LeRobotDataset"
         ) as mock_dataset:
             # Setup mock dataset
             mock_dataset.return_value = Mock(
@@ -195,7 +195,7 @@ Release cube | Open gripper to release cube | 4.0s
     def test_transformation_example(self, enrichment_tool):
         """Test the transformation example from README."""
         with patch(
-            "lesynthesis.enrich_with_llm.LeRobotDataset"
+            "lesynthesis.synthesizer.LeRobotDataset"
         ) as mock_dataset:
             # Setup mock dataset with simple task
             mock_dataset.return_value = Mock(
@@ -253,7 +253,7 @@ Release cube | Open gripper to release cube | 4.0s
     def test_negative_examples_generation(self, enrichment_tool):
         """Test negative example generation."""
         with patch(
-            "lesynthesis.enrich_with_llm.LeRobotDataset"
+            "lesynthesis.synthesizer.LeRobotDataset"
         ) as mock_dataset:
             # Setup mock dataset
             mock_dataset.return_value = Mock(
@@ -286,7 +286,7 @@ Release cube | Open gripper to release cube | 4.0s
     def test_trajectory_summarization(self, enrichment_tool):
         """Test trajectory summarization."""
         with patch(
-            "lesynthesis.enrich_with_llm.LeRobotDataset"
+            "lesynthesis.synthesizer.LeRobotDataset"
         ) as mock_dataset:
             # Setup mock dataset
             mock_dataset.return_value = Mock(
@@ -382,7 +382,7 @@ and transfers it to the target location with smooth, controlled movements."""
         os.environ["GOOGLE_API_KEY"] = "test-api-key"
 
         with patch(
-            "lesynthesis.enrich_with_llm._setup_generative_model"
+            "lesynthesis.synthesizer._setup_generative_model"
         ) as mock_setup:
             mock_setup.return_value = Mock()
 
@@ -398,7 +398,7 @@ and transfers it to the target location with smooth, controlled movements."""
     def test_instruction_structure_validation(self, enrichment_tool):
         """Test that generated instructions have the correct structure."""
         with patch(
-            "lesynthesis.enrich_with_llm.LeRobotDataset"
+            "lesynthesis.synthesizer.LeRobotDataset"
         ) as mock_dataset:
             # Setup mock dataset
             mock_dataset.return_value = Mock(

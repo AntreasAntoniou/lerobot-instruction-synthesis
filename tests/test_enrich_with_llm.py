@@ -23,7 +23,7 @@ from unittest.mock import MagicMock, patch, Mock
 
 import pytest
 
-from lesynthesis.enrich_with_llm import LLMEnrichmentTool
+from lesynthesis.synthesizer import CaptionSynthesizer
 
 # Skip all tests in this file if the GOOGLE_API_KEY is not set.
 pytestmark = pytest.mark.skipif(
@@ -31,15 +31,13 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-class TestLLMEnrichmentTool:
-    """Test cases for LLMEnrichmentTool."""
+class TestCaptionSynthesizer:
+    """Test cases for CaptionSynthesizer."""
 
     @pytest.fixture
     def mock_model(self):
         """Create a mock model for testing."""
-        with patch(
-            "lesynthesis.enrich_with_llm._setup_generative_model"
-        ) as mock:
+        with patch("lesynthesis.synthesizer._setup_generative_model") as mock:
             mock_model = Mock()
             mock_model.generate_content.return_value = Mock(
                 text="Test response from LLM"
@@ -50,7 +48,7 @@ class TestLLMEnrichmentTool:
     @pytest.fixture
     def tool(self, mock_model):
         """Create a tool instance with mocked model."""
-        return LLMEnrichmentTool()
+        return CaptionSynthesizer()
 
     def test_initialization(self, tool):
         """Test tool initialization."""
@@ -58,7 +56,7 @@ class TestLLMEnrichmentTool:
         assert hasattr(tool, "_model")
         assert hasattr(tool, "_console")
 
-    @patch("lesynthesis.enrich_with_llm.LeRobotDataset")
+    @patch("lesynthesis.synthesizer.LeRobotDataset")
     def test_generate_instructions(self, mock_dataset, tool):
         """Test instruction generation."""
         # Mock dataset
@@ -97,7 +95,7 @@ class TestLLMEnrichmentTool:
         assert "low_level" in instructions
         assert "raw_response" in instructions
 
-    @patch("lesynthesis.enrich_with_llm.LeRobotDataset")
+    @patch("lesynthesis.synthesizer.LeRobotDataset")
     def test_generate_negatives(self, mock_dataset, tool):
         """Test negative example generation."""
         # Mock dataset
