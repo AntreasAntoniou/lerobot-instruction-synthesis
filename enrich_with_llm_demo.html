@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeSynthesis - Rich Caption Generation for Robot Learning</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* gray-900 */
+            color: #ffffff;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        /* Gradient text effect */
+        .gradient-text {
+            background: linear-gradient(135deg, #FFD21E 0%, #FFA500 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        header {
+            background-color: rgba(17, 24, 39, 0.95); /* gray-900 with opacity */
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #374151; /* gray-700 */
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            padding: 1rem 0;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .subtitle {
+            font-size: 0.875rem;
+            color: #9CA3AF; /* gray-400 */
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .panel {
+            background-color: #1F2937; /* gray-800 */
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .panel:hover {
+            background-color: #374151; /* gray-700 */
+        }
+        
+        .control-panel {
+            height: fit-content;
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #FBBF24; /* yellow-400 */
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background-color: #111827; /* gray-900 */
+            border: 2px solid #374151; /* gray-700 */
+            border-radius: 0.5rem;
+            color: #ffffff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #FBBF24; /* yellow-400 */
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
+        }
+        
+        button {
+            background-color: #FBBF24; /* yellow-400 */
+            color: #111827; /* gray-900 */
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 0.625rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button:hover:not(:disabled) {
+            background-color: #FCD34D; /* yellow-300 */
+            transform: scale(1.05);
+        }
+        
+        button:disabled {
+            background-color: #4B5563; /* gray-600 */
+            color: #9CA3AF; /* gray-400 */
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        button:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+        
+        .info-box {
+            background-color: rgba(251, 191, 36, 0.1);
+            border-left: 4px solid #FBBF24; /* yellow-400 */
+            padding: 1rem;
+            margin-top: 1.25rem;
+            border-radius: 0.5rem;
+        }
+        
+        .info-box h3 {
+            margin-bottom: 0.625rem;
+            color: #FBBF24; /* yellow-400 */
+            font-size: 1.125rem;
+        }
+        
+        .info-box p {
+            margin: 0.25rem 0;
+            font-size: 0.875rem;
+            color: #D1D5DB; /* gray-300 */
+        }
+        
+        .visualization-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .video-container {
+            background-color: #000000;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            position: relative;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .placeholder {
+            color: #6B7280; /* gray-500 */
+            font-size: 1.125rem;
+            text-align: center;
+            padding: 2.5rem;
+        }
+        
+        .motor-plot {
+            text-align: center;
+        }
+        
+        .motor-plot img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+        }
+        
+        .summary-section {
+            margin-top: 1.25rem;
+        }
+        
+        .summary-content {
+            background-color: rgba(31, 41, 55, 0.5); /* gray-800 with opacity */
+            padding: 1.25rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.8;
+            border: 1px solid #374151; /* gray-700 */
+            color: #D1D5DB; /* gray-300 */
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 3px solid #374151; /* gray-700 */
+            border-top: 3px solid #FBBF24; /* yellow-400 */
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 0.625rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background-color: rgba(239, 68, 68, 0.1); /* red-500 with opacity */
+            color: #EF4444; /* red-500 */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 0.625rem;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        .success {
+            background-color: rgba(34, 197, 94, 0.1); /* green-500 with opacity */
+            color: #22C55E; /* green-500 */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 0.625rem;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+        
+        .negatives-container {
+            background-color: rgba(31, 41, 55, 0.5); /* gray-800 with opacity */
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            border: 1px solid #374151; /* gray-700 */
+        }
+        
+        .negative-task {
+            margin-bottom: 1.875rem;
+        }
+        
+        .negative-task h3 {
+            color: #FBBF24; /* yellow-400 */
+            margin-bottom: 1rem;
+            font-size: 1.125rem;
+        }
+        
+        .negative-examples {
+            white-space: pre-wrap;
+            line-height: 1.8;
+            padding-left: 1.25rem;
+            color: #D1D5DB; /* gray-300 */
+        }
+        
+        h2 {
+            color: #ffffff;
+            margin-bottom: 1.25rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+        }
+        
+        /* Progress Bar Styles */
+        .progress-container {
+            display: none;
+            margin-top: 1rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 0.5rem;
+            background-color: #374151; /* gray-700 */
+            border-radius: 0.25rem;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FBBF24 0%, #FFA500 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.3),
+                transparent
+            );
+            animation: shimmer 1.5s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .progress-text {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #9CA3AF; /* gray-400 */
+            text-align: center;
+        }
+        
+        /* Emoji icons */
+        .icon {
+            font-size: 1.5rem;
+        }
+        
+        /* Instruction styles */
+        .instruction-level {
+            margin-bottom: 2rem;
+        }
+        
+        .instruction-header {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            margin-bottom: 1rem;
+        }
+        
+        .instruction-header h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        
+        .high-level-instruction {
+            background-color: rgba(251, 191, 36, 0.1);
+            border-left: 4px solid #FBBF24;
+            padding: 1.25rem;
+            border-radius: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: 500;
+        }
+        
+        .mid-level-instruction {
+            background-color: #1F2937; /* gray-800 */
+            padding: 1.25rem;
+            border-radius: 0.5rem;
+        }
+        
+        .phase-item {
+            margin-bottom: 0.75rem;
+            padding: 0.625rem;
+            background-color: rgba(17, 24, 39, 0.5); /* gray-900 with opacity */
+            border-radius: 0.375rem;
+            border-left: 3px solid #FBBF24;
+        }
+        
+        .low-level-instruction {
+            background-color: #1F2937; /* gray-800 */
+            padding: 1.25rem;
+            border-radius: 0.5rem;
+            max-height: 25rem;
+            overflow-y: auto;
+        }
+        
+        .step-item {
+            margin-bottom: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background-color: rgba(17, 24, 39, 0.5); /* gray-900 with opacity */
+            border-radius: 0.25rem;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 0.875rem;
+            border-left: 3px solid rgba(251, 191, 36, 0.5);
+        }
+        
+        /* Utility classes for low-level instructions */
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .p-4 { padding: 1rem; }
+        .bg-gray-800 { background-color: #1F2937; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .border { border-width: 1px; }
+        .border-gray-700 { border-color: #374151; }
+        .flex { display: flex; }
+        .items-start { align-items: flex-start; }
+        .gap-3 { gap: 0.75rem; }
+        .text-yellow-400 { color: #FBBF24; }
+        .font-bold { font-weight: 700; }
+        .flex-1 { flex: 1; }
+        .font-semibold { font-weight: 600; }
+        .text-white { color: #ffffff; }
+        .text-gray-300 { color: #D1D5DB; }
+        .text-gray-400 { color: #9CA3AF; }
+        .text-sm { font-size: 0.875rem; }
+        .space-y-2 > * + * { margin-top: 0.5rem; }
+        .list-disc { list-style-type: disc; }
+        .list-inside { list-style-position: inside; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <span class="icon">🤖</span>
+                <span class="gradient-text">LeSynthesis</span>
+            </div>
+            <p class="subtitle">Rich Caption Generation for Robot Learning | Powered by Gemini AI</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- Welcome Section -->
+        <div style="text-align: center; margin-bottom: 2rem; padding: 2rem; background-color: rgba(251, 191, 36, 0.05); border-radius: 0.5rem; border: 1px solid rgba(251, 191, 36, 0.2);">
+            <h1 style="font-size: 2rem; margin-bottom: 1rem;">
+                Welcome to <span class="gradient-text">LeSynthesis</span>
+            </h1>
+            <p style="font-size: 1.125rem; color: #D1D5DB; max-width: 800px; margin: 0 auto; line-height: 1.8;">
+                Transform simple robot action datasets into richly annotated training data. 
+                LeSynthesis uses state-of-the-art multi-modal LLMs to analyze robot trajectories 
+                and generate detailed, multi-level instructions that enable training more sophisticated 
+                robot control models.
+            </p>
+            <p style="margin-top: 1rem; font-size: 0.875rem; color: #9CA3AF;">
+                🎯 From "pick up cube" → Detailed step-by-step instructions with timing and context
+            </p>
+        </div>
+        
+        <div class="main-content">
+            <div class="control-panel">
+                <div class="panel">
+                    <h2>Dataset Control</h2>
+                    
+                    <div class="form-group">
+                        <label for="dataset-id">Dataset Repository ID</label>
+                        <input type="text" id="dataset-id" placeholder="e.g., lerobot/aloha_sim_transfer_cube_human" value="lerobot/aloha_sim_transfer_cube_human">
+                    </div>
+                    
+                    <button id="load-dataset-btn" onclick="loadDataset()">Load Dataset</button>
+                    
+                    <div id="dataset-info" class="info-box" style="display: none;">
+                        <h3>Dataset Information</h3>
+                        <p id="info-content"></p>
+                        <p style="margin-top: 0.75rem; font-size: 0.75rem; color: #9CA3AF;">
+                            LeSynthesis will transform this dataset's simple task descriptions into rich, multi-level captions.
+                        </p>
+                    </div>
+                    
+                    <div id="episode-controls" style="display: none; margin-top: 1.25rem;">
+                        <div class="form-group">
+                            <label for="episode-select">Select Episode</label>
+                            <select id="episode-select"></select>
+                        </div>
+                        
+                        <button id="analyze-btn" onclick="analyzeEpisode()">Analyze Episode</button>
+                        <button id="generate-negatives-btn" onclick="generateNegatives()">Generate Pitfalls</button>
+                    </div>
+                    
+                    <div id="status-message"></div>
+                </div>
+            </div>
+            
+            <div class="visualization-panel">
+                <div class="panel">
+                    <h2><span class="icon">🎬</span> Episode Video</h2>
+                    <div class="video-container">
+                        <div id="video-placeholder" class="placeholder">
+                            Load a dataset and select an episode to view the video
+                        </div>
+                        <video id="episode-video" controls style="display: none;"></video>
+                    </div>
+                </div>
+                
+                <div class="panel motor-plot">
+                    <h2><span class="icon">📊</span> Motor Activations</h2>
+                    <div id="motor-plot-container">
+                        <div class="placeholder">
+                            Motor activation plot will appear here
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel summary-section">
+                    <h2><span class="icon">📝</span> Trajectory Summary</h2>
+                    
+                    <div id="trajectory-progress" class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="trajectory-progress-fill"></div>
+                        </div>
+                        <div class="progress-text" id="trajectory-progress-text">Initializing...</div>
+                    </div>
+                    
+                    <div id="summary-container">
+                        <div class="placeholder">
+                            LeSynthesis will analyze the robot trajectory and generate a comprehensive summary
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel summary-section">
+                    <h2><span class="icon">📋</span> Multi-Level Instructions</h2>
+                    <button id="generate-instructions-btn" onclick="generateInstructions()" style="margin-bottom: 1rem;">Generate Instructions</button>
+                    
+                    <div id="instructions-progress" class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="instructions-progress-fill"></div>
+                        </div>
+                        <div class="progress-text" id="instructions-progress-text">Initializing...</div>
+                    </div>
+                    
+                    <div id="instructions-container">
+                        <div class="placeholder">
+                            LeSynthesis will generate rich, hierarchical captions at multiple levels of detail
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel summary-section">
+                    <h2><span class="icon">⚠️</span> Common Pitfalls</h2>
+                    <button id="generate-negatives-btn" onclick="generateNegatives()" style="margin-bottom: 1rem;">Generate Pitfalls</button>
+                    
+                    <div id="negatives-progress" class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="negatives-progress-fill"></div>
+                        </div>
+                        <div class="progress-text" id="negatives-progress-text">Initializing...</div>
+                    </div>
+                    
+                    <div id="negatives-container">
+                        <div class="placeholder">
+                            LeSynthesis will generate contrastive examples showing what NOT to do
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer style="background-color: #111827; border-top: 1px solid #374151; margin-top: 4rem; padding: 2rem 0; text-align: center;">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
+            <p style="color: #9CA3AF; font-size: 0.875rem;">
+                <span class="gradient-text" style="font-weight: 600;">LeSynthesis</span> - Rich Caption Generation for Robot Learning
+            </p>
+            <p style="color: #6B7280; font-size: 0.75rem; margin-top: 0.5rem;">
+                Created by Antreas Antoniou | 
+                <a href="https://github.com/AntreasAntoniou/lerobot-instruction-synthesis" style="color: #FBBF24; text-decoration: none;">GitHub</a> | 
+                <a href="https://lerobot-edinburgh.com" style="color: #FBBF24; text-decoration: none;">LeRobot Edinburgh</a>
+            </p>
+        </div>
+    </footer>
+    
+    <script>
+        const API_BASE = 'http://localhost:7777';
+        let currentDataset = null;
+        
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status-message');
+            statusEl.className = type;
+            statusEl.textContent = message;
+            statusEl.style.display = 'block';
+            
+            if (type !== 'error') {
+                setTimeout(() => {
+                    statusEl.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        function showLoading(elementId, show = true) {
+            const el = document.getElementById(elementId);
+            if (show) {
+                el.innerHTML += '<span class="loading"></span>';
+            } else {
+                const loading = el.querySelector('.loading');
+                if (loading) loading.remove();
+            }
+        }
+        
+        function updateProgress(progressId, textId, percent, text) {
+            const progressFill = document.getElementById(progressId);
+            const progressText = document.getElementById(textId);
+            const progressContainer = progressFill.closest('.progress-container');
+            
+            progressContainer.style.display = 'block';
+            progressFill.style.width = percent + '%';
+            progressText.textContent = text;
+        }
+        
+        function hideProgress(progressId) {
+            const progressFill = document.getElementById(progressId);
+            const progressContainer = progressFill.closest('.progress-container');
+            progressContainer.style.display = 'none';
+        }
+        
+        async function loadDataset() {
+            const datasetId = document.getElementById('dataset-id').value;
+            if (!datasetId) {
+                showStatus('Please enter a dataset ID', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('load-dataset-btn');
+            btn.disabled = true;
+            btn.textContent = 'Loading...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/load_dataset`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ dataset_id: datasetId })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentDataset = data;
+                    
+                    // Update UI
+                    document.getElementById('dataset-info').style.display = 'block';
+                    document.getElementById('info-content').innerHTML = `
+                        <strong>Episodes:</strong> ${data.num_episodes}<br>
+                        <strong>Tasks:</strong> ${data.tasks.join(', ')}<br>
+                        <strong>FPS:</strong> ${data.fps}<br>
+                        <strong>Robot Type:</strong> ${data.robot_type}
+                    `;
+                    
+                    // Populate episode dropdown
+                    const select = document.getElementById('episode-select');
+                    select.innerHTML = data.episodes.map(ep => 
+                        `<option value="${ep}">Episode ${ep}</option>`
+                    ).join('');
+                    
+                    document.getElementById('episode-controls').style.display = 'block';
+                    showStatus('Dataset loaded successfully!', 'success');
+                } else {
+                    showStatus(`Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Load Dataset';
+            }
+        }
+        
+        async function analyzeEpisode() {
+            const episodeIndex = document.getElementById('episode-select').value;
+            const btn = document.getElementById('analyze-btn');
+            btn.disabled = true;
+            btn.textContent = 'Analyzing...';
+            
+            try {
+                // Load video
+                const videoEl = document.getElementById('episode-video');
+                const videoPlaceholder = document.getElementById('video-placeholder');
+                
+                videoEl.src = `${API_BASE}/api/get_episode_video/${episodeIndex}`;
+                videoEl.style.display = 'block';
+                videoPlaceholder.style.display = 'none';
+                
+                // Load motor plot
+                const motorContainer = document.getElementById('motor-plot-container');
+                motorContainer.innerHTML = '<div class="placeholder">Loading motor activations...</div>';
+                
+                const motorImg = new Image();
+                motorImg.src = `${API_BASE}/api/get_motor_plot/${episodeIndex}`;
+                motorImg.onload = () => {
+                    motorContainer.innerHTML = '';
+                    motorContainer.appendChild(motorImg);
+                };
+                
+                // Get summary
+                const summaryContainer = document.getElementById('summary-container');
+                summaryContainer.innerHTML = '';
+                
+                // Show progress for trajectory summary
+                updateProgress('trajectory-progress-fill', 'trajectory-progress-text', 20, 'Analyzing trajectory data...');
+                
+                setTimeout(() => {
+                    updateProgress('trajectory-progress-fill', 'trajectory-progress-text', 50, 'Processing motor activations...');
+                }, 500);
+                
+                setTimeout(() => {
+                    updateProgress('trajectory-progress-fill', 'trajectory-progress-text', 80, 'Generating AI summary...');
+                }, 1200);
+                
+                const summaryResponse = await fetch(`${API_BASE}/api/summarize_trajectory/${episodeIndex}`);
+                const summaryData = await summaryResponse.json();
+                
+                updateProgress('trajectory-progress-fill', 'trajectory-progress-text', 100, 'Complete!');
+                
+                if (summaryData.success) {
+                    setTimeout(() => {
+                        hideProgress('trajectory-progress-fill');
+                        summaryContainer.innerHTML = `<div class="summary-content">${summaryData.summary}</div>`;
+                    }, 500);
+                } else {
+                    hideProgress('trajectory-progress-fill');
+                    summaryContainer.innerHTML = `<div class="error">Error: ${summaryData.error}</div>`;
+                }
+                
+                showStatus('Analysis complete!', 'success');
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Analyze Episode';
+            }
+        }
+        
+        async function generateNegatives() {
+            const btn = document.getElementById('generate-negatives-btn');
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+            
+            const negativesContainer = document.getElementById('negatives-container');
+            negativesContainer.innerHTML = '';
+            
+            // Show progress
+            updateProgress('negatives-progress-fill', 'negatives-progress-text', 20, 'Connecting to AI model...');
+            
+            try {
+                // Simulate progress updates
+                setTimeout(() => {
+                    updateProgress('negatives-progress-fill', 'negatives-progress-text', 50, 'Analyzing task requirements...');
+                }, 500);
+                
+                setTimeout(() => {
+                    updateProgress('negatives-progress-fill', 'negatives-progress-text', 80, 'Identifying common pitfalls...');
+                }, 1500);
+                
+                const response = await fetch(`${API_BASE}/api/generate_negatives`);
+                const data = await response.json();
+                
+                updateProgress('negatives-progress-fill', 'negatives-progress-text', 100, 'Complete!');
+                
+                if (data.success) {
+                    setTimeout(() => {
+                        hideProgress('negatives-progress-fill');
+                        
+                        let html = '<div class="negatives-container">';
+                        for (const [task, examples] of Object.entries(data.negatives)) {
+                            html += `
+                                <div class="negative-task">
+                                    <h3>Task: ${task}</h3>
+                                    <div class="negative-examples">${examples}</div>
+                                </div>
+                            `;
+                        }
+                        html += '</div>';
+                        negativesContainer.innerHTML = html;
+                        
+                        showStatus('Pitfalls identified successfully!', 'success');
+                    }, 500);
+                } else {
+                    hideProgress('negatives-progress-fill');
+                    negativesContainer.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+                }
+            } catch (error) {
+                hideProgress('negatives-progress-fill');
+                showStatus(`Error: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Generate Pitfalls';
+            }
+        }
+        
+        async function generateInstructions() {
+            const episodeIndex = document.getElementById('episode-select').value;
+            const btn = document.getElementById('generate-instructions-btn');
+            btn.disabled = true;
+            btn.textContent = 'Generating Instructions...';
+            
+            const instructionsContainer = document.getElementById('instructions-container');
+            instructionsContainer.innerHTML = '';
+            
+            // Show progress
+            updateProgress('instructions-progress-fill', 'instructions-progress-text', 10, 'Loading episode data...');
+            
+            try {
+                // Simulate progress updates
+                setTimeout(() => {
+                    updateProgress('instructions-progress-fill', 'instructions-progress-text', 30, 'Analyzing trajectory patterns...');
+                }, 800);
+                
+                setTimeout(() => {
+                    updateProgress('instructions-progress-fill', 'instructions-progress-text', 60, 'Generating high-level instructions...');
+                }, 2000);
+                
+                setTimeout(() => {
+                    updateProgress('instructions-progress-fill', 'instructions-progress-text', 80, 'Creating detailed action steps...');
+                }, 3500);
+                
+                const response = await fetch(`${API_BASE}/api/generate_instructions/${episodeIndex}`);
+                const data = await response.json();
+                
+                updateProgress('instructions-progress-fill', 'instructions-progress-text', 100, 'Complete!');
+                
+                if (data.success) {
+                    setTimeout(() => {
+                        hideProgress('instructions-progress-fill');
+                        
+                        const instructions = data.instructions;
+                        let html = '<div>';
+                        
+                        // High-level instruction
+                        html += `
+                            <div class="instruction-level">
+                                <div class="instruction-header">
+                                    <span class="icon">🎯</span>
+                                    <h3 class="gradient-text">High-Level (Global Task)</h3>
+                                </div>
+                                <div class="high-level-instruction">
+                                    ${instructions.high_level}
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Mid-level instructions
+                        html += `
+                            <div class="instruction-level">
+                                <div class="instruction-header">
+                                    <span class="icon">📋</span>
+                                    <h3 class="gradient-text">Mid-Level (Subtasks/Phases)</h3>
+                                </div>
+                                <div class="mid-level-instruction">
+                        `;
+                        instructions.mid_level.forEach((phase, index) => {
+                            html += `<div class="phase-item">
+                                <strong style="color: #FBBF24;">Phase ${index + 1}:</strong> ${phase}
+                            </div>`;
+                        });
+                        html += `
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Low-level instructions
+                        html += `
+                            <div class="instruction-level">
+                                <div class="instruction-header">
+                                    <span class="icon">🔧</span>
+                                    <h3 class="gradient-text">Low-Level (Detailed Actions)</h3>
+                                </div>
+                                <div class="low-level-instruction">
+                        `;
+                        // Display low-level instructions
+                        if (instructions.low_level && instructions.low_level.length > 0) {
+                            const lowLevelHtml = instructions.low_level.map((step, index) => {
+                                if (typeof step === 'object' && step.action) {
+                                    // Structured format with action, detail, timing
+                                    return `
+                                        <div class="mb-4 p-4 bg-gray-800 rounded-lg border border-gray-700">
+                                            <div class="flex items-start gap-3">
+                                                <span class="text-yellow-400 font-bold">Step ${index + 1}:</span>
+                                                <div class="flex-1">
+                                                    <div class="font-semibold text-white mb-1">${step.action}</div>
+                                                    ${step.detail ? `<div class="text-gray-300 text-sm mb-1">📋 ${step.detail}</div>` : ''}
+                                                    ${step.timing ? `<div class="text-gray-400 text-sm">⏱️ ${step.timing}</div>` : ''}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                } else {
+                                    // Simple string format (fallback)
+                                    return `<li class="mb-2">${step}</li>`;
+                                }
+                            }).join('');
+                            
+                            html += `
+                                <div class="space-y-2">
+                                    ${instructions.low_level.every(step => typeof step === 'object') ? lowLevelHtml : `<ul class="list-disc list-inside space-y-2">${lowLevelHtml}</ul>`}
+                                </div>
+                            `;
+                        } else {
+                            html += '<p class="text-gray-400">No detailed actions generated</p>';
+                        }
+                        html += `
+                                </div>
+                            </div>
+                        `;
+                        
+                        html += '</div>';
+                        instructionsContainer.innerHTML = html;
+                        
+                        showStatus('Instructions generated successfully!', 'success');
+                    }, 500);
+                } else {
+                    hideProgress('instructions-progress-fill');
+                    instructionsContainer.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+                }
+            } catch (error) {
+                hideProgress('instructions-progress-fill');
+                showStatus(`Error: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Generate Instructions';
+            }
+        }
+    </script>
+</body>
+</html> 

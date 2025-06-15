@@ -30,9 +30,7 @@ llm_tool = LLMEnrichmentTool()
 def index():
     """Serve the HTML interface."""
     # Look for the HTML file in the project root
-    html_path = (
-        Path(__file__).parent.parent.parent / "enrich_with_llm_demo.html"
-    )
+    html_path = Path(__file__).parent.parent / "enrich_with_llm_demo.html"
     return send_file(str(html_path))
 
 
@@ -242,7 +240,21 @@ def generate_instructions(episode_index):
         return jsonify({"success": False, "error": str(e)})
 
 
+def main(port: int = 7777, host: str = "0.0.0.0", debug: bool = False):
+    """
+    Start the LeRobot LLM Enrichment Server.
+
+    Args:
+        port: Port to run the server on (default: 7777)
+        host: Host to bind to (default: 0.0.0.0)
+        debug: Run in debug mode (default: False)
+    """
+    print(f"Starting LeRobot LLM Enrichment Server...")
+    print(f"Open http://localhost:{port} in your browser")
+    app.run(debug=debug, host=host, port=port)
+
+
 if __name__ == "__main__":
-    print("Starting LeRobot LLM Enrichment Server...")
-    print("Open http://localhost:7777 in your browser")
-    app.run(debug=True, host="0.0.0.0", port=7777)
+    import fire
+
+    fire.Fire(main)
