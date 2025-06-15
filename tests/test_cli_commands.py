@@ -16,15 +16,25 @@ class TestCLICommands:
 
     def test_lesynthesis_command_exists(self):
         """Test that lesynthesis command is available."""
+        # Try the installed command first
         result = subprocess.run(
-            [sys.executable, "-m", "lesynthesis", "--help"],
-            capture_output=True,
-            text=True,
+            ["lesynthesis", "--help"], capture_output=True, text=True
         )
+
+        # If that fails, try with python -m
+        if result.returncode != 0:
+            result = subprocess.run(
+                [sys.executable, "-m", "lesynthesis", "--help"],
+                capture_output=True,
+                text=True,
+            )
+
         assert result.returncode == 0
-        assert "generate_instructions" in result.stdout
-        assert "summarize" in result.stdout
-        assert "generate_negatives" in result.stdout
+        # Fire shows commands in stderr with --help, or stdout without --help
+        output = result.stdout + result.stderr
+        assert "generate_instructions" in output
+        assert "summarize" in output
+        assert "generate_negatives" in output
 
     def test_lesynthesis_server_command_exists(self):
         """Test that lesynthesis-server command is available."""
@@ -53,8 +63,6 @@ class TestCLICommands:
         # Test the command structure
         result = subprocess.run(
             [
-                sys.executable,
-                "-m",
                 "lesynthesis",
                 "generate_instructions",
                 "lerobot/pusht",
@@ -77,8 +85,6 @@ class TestCLICommands:
 
         result = subprocess.run(
             [
-                sys.executable,
-                "-m",
                 "lesynthesis",
                 "summarize",
                 "lerobot/pusht",
@@ -103,8 +109,6 @@ class TestCLICommands:
 
         result = subprocess.run(
             [
-                sys.executable,
-                "-m",
                 "lesynthesis",
                 "generate_negatives",
                 "lerobot/pusht",
@@ -120,8 +124,6 @@ class TestCLICommands:
         """Test that model_name parameter works."""
         result = subprocess.run(
             [
-                sys.executable,
-                "-m",
                 "lesynthesis",
                 "--model_name",
                 "gemini-2.5-pro-preview-03-25",
