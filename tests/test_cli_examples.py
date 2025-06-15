@@ -9,7 +9,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from lesynthesis.enrich_with_llm import LLMEnrichmentTool, main
+from lesynthesis.synthesizer import LLMEnrichmentTool, main
 
 
 class TestCLIExamples:
@@ -18,14 +18,14 @@ class TestCLIExamples:
     @pytest.fixture
     def mock_fire(self):
         """Mock fire.Fire to prevent actual CLI execution."""
-        with patch("lesynthesis.enrich_with_llm.fire.Fire") as mock:
+        with patch("lesynthesis.synthesizer.fire.Fire") as mock:
             yield mock
 
     @pytest.fixture
     def mock_llm_tool(self):
         """Mock the LLMEnrichmentTool."""
         with patch(
-            "lesynthesis.enrich_with_llm.LLMEnrichmentTool"
+            "lesynthesis.synthesizer.LLMEnrichmentTool"
         ) as mock_class:
             mock_instance = Mock()
             mock_class.return_value = mock_instance
@@ -95,7 +95,7 @@ class TestCLIExamples:
 
         # Mock dataset with multiple episodes
         with patch(
-            "lesynthesis.enrich_with_llm.LeRobotDataset"
+            "lesynthesis.synthesizer.LeRobotDataset"
         ) as mock_dataset:
             mock_dataset.return_value = Mock(
                 num_episodes=3,
@@ -156,11 +156,11 @@ class TestCLIExamples:
 
     def test_server_command_simulation(self):
         """Test that the server can be started with custom port."""
-        from lesynthesis.enrich_with_llm_server import main as server_main
+        from lesynthesis.synthesizer_server import main as server_main
 
-        with patch("lesynthesis.enrich_with_llm_server.app.run") as mock_run:
+        with patch("lesynthesis.synthesizer_server.app.run") as mock_run:
             with patch(
-                "lesynthesis.enrich_with_llm_server.fire.Fire"
+                "lesynthesis.synthesizer_server.fire.Fire"
             ) as mock_fire:
                 # Simulate the server being called with custom port
                 server_main(port=5001, host="0.0.0.0", debug=False)
