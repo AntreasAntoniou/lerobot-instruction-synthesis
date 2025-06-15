@@ -18,6 +18,12 @@ Most lerobot datasets come with minimal descriptions like "pick up the cube" or 
 - 🎭 **Creating narrative-style instructions** that describe not just what to do, but how and why
 - 🔄 **Enhancing existing datasets** without requiring new robot demonstrations
 
+### 🎥 Demo Video
+
+Watch the tool in action:
+
+[![LeRobot Instruction Synthesis Demo](https://img.youtube.com/vi/-ECljFcs3uU/maxresdefault.jpg)](https://www.youtube.com/watch?v=-ECljFcs3uU)
+
 ### 📊 Example Transformation
 
 **Before (Original Dataset):**
