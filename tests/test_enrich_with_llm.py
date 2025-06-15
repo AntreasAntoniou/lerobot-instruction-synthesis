@@ -62,19 +62,25 @@ class TestLLMEnrichmentTool:
     def test_generate_instructions(self, mock_dataset, tool):
         """Test instruction generation."""
         # Mock dataset
+        # Create mock action data
+        mock_actions = []
+        for i in range(100):
+            mock_action = Mock()
+            mock_action.numpy.return_value = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
+            mock_actions.append(mock_action)
+
+        # Create mock episode data that behaves like a dict with list values
+        mock_episode_data = {
+            "task_index": [Mock(item=lambda: 0)] * 100,
+            "action": mock_actions,
+        }
+
         mock_dataset.return_value = Mock(
             episode_data_index={
                 "from": [Mock(item=lambda: 0)],
                 "to": [Mock(item=lambda: 100)],
             },
-            hf_dataset=Mock(
-                select=Mock(
-                    return_value={
-                        "task_index": [Mock(item=lambda: 0)],
-                        "action": [Mock(numpy=lambda: [0.1, 0.2, 0.3])],
-                    }
-                )
-            ),
+            hf_dataset=Mock(select=Mock(return_value=mock_episode_data)),
             meta=Mock(tasks={0: "Test task"}, robot_type="test_robot"),
             fps=30,
             features={},
@@ -168,8 +174,8 @@ class TestIntegration:
     """Integration tests that require API access."""
 
     @pytest.mark.skipif(
-        not pytest.config.getoption("--run-integration", default=False),
-        reason="Integration tests require --run-integration flag",
+        "INTEGRATION_TESTS" not in os.environ,
+        reason="Integration tests require INTEGRATION_TESTS env var",
     )
     def test_real_api_call(self):
         """Test with real API (requires GOOGLE_API_KEY)."""
