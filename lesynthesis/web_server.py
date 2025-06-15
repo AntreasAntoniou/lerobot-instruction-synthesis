@@ -242,14 +242,14 @@ def generate_instructions(episode_index):
 
 def main(port: int = 7777, host: str = "0.0.0.0", debug: bool = False):
     """
-    Start the LeRobot LLM Enrichment Server.
+    Start the LeRobot Instruction Synthesis Server.
 
     Args:
         port: Port to run the server on (default: 7777)
         host: Host to bind to (default: 0.0.0.0)
         debug: Run in debug mode (default: False)
     """
-    print(f"Starting LeRobot LLM Enrichment Server...")
+    print(f"Starting LeRobot Instruction Synthesis Server...")
     print(f"Open http://localhost:{port} in your browser")
     app.run(debug=debug, host=host, port=port)
 

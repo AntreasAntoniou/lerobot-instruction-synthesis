@@ -7,7 +7,7 @@ instructions from robot trajectory data.
 """
 
 import os
-from lesynthesis.enrich_with_llm import LLMEnrichmentTool
+from lesynthesis.synthesizer import CaptionSynthesizer
 
 
 def main():
@@ -19,7 +19,7 @@ def main():
 
     # Initialize the tool
     print("Initializing LeRobot Instruction Synthesis...")
-    tool = LLMEnrichmentTool(model_name="gemini-2.0-flash-exp")
+    tool = CaptionSynthesizer(model_name="gemini-2.0-flash-exp")
 
     # Example dataset from HuggingFace Hub
     dataset_id = "lerobot/aloha_sim_transfer_cube_human"
