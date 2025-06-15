@@ -99,13 +99,13 @@ lesynthesis generate-instructions --dataset lerobot/pusht --episode 0 --detail-l
 ### Python API
 
 ```python
-from lesynthesis import LLMEnrichmentTool
+from lesynthesis import CaptionSynthesizer
 
-# Initialize the tool
-enrichment_tool = LLMEnrichmentTool()
+# Initialize the synthesizer
+synthesizer = CaptionSynthesizer()
 
 # Generate rich captions for a robot trajectory
-instructions = enrichment_tool.generate_instructions(
+instructions = synthesizer.generate_instructions(
     dataset_repo_id="lerobot/pusht",
     episode_index=0
 )

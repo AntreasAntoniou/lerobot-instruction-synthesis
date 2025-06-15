@@ -95,8 +95,8 @@ all = [
 "Source Code" = "https://github.com/AntreasAntoniou/lerobot-instruction-synthesis"
 
 [project.scripts]
-lesynthesis = "lesynthesis.enrich_with_llm:main"
-lesynthesis-server = "lesynthesis.enrich_with_llm_server:main"
+lesynthesis = "lesynthesis.synthesizer:main"
+lesynthesis-server = "lesynthesis.web_server:main"
 
 [tool.setuptools]
 packages = ["lesynthesis"]

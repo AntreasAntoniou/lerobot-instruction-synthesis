@@ -177,7 +177,7 @@ class TestIntegration:
     )
     def test_real_api_call(self):
         """Test with real API (requires GOOGLE_API_KEY)."""
-        tool = LLMEnrichmentTool()
+        tool = CaptionSynthesizer()
 
         # This would make a real API call
         instructions = tool.generate_instructions(

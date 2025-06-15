@@ -1,23 +1,34 @@
 """
-A script to enrich LeRobot datasets using a Large Language Model (LLM).
+LeSynthesis - Caption Synthesizer for Robot Learning
 
-This tool provides two main functionalities:
-1.  Automated Trajectory Summarization: It takes raw robot trajectory data from a dataset
-    and uses an LLM to generate a natural language summary of the robot's actions.
-2.  Generating "What Not To Do" Data (Negative Mining): It uses an LLM's world
-    knowledge to generate textual descriptions of incorrect, unsafe, or inefficient ways
-    to perform a given task.
+This module provides the core functionality for synthesizing rich, multi-level captions
+from robot trajectory data using Large Language Models (LLMs). It transforms simple
+task descriptions into detailed, hierarchical instructions that enable training more
+sophisticated robot control models.
 
-This helps in transforming text-poor datasets into more descriptive and richer ones,
-which is valuable for training more robust and context-aware robot policies.
+Key Features:
+------------
+1. Multi-Level Caption Generation: Creates instructions at three levels of detail:
+   - High-level: Overall task goals
+   - Mid-level: Task phases and subtasks
+   - Low-level: Detailed action sequences with timing
 
-Example usage:
+2. Trajectory Summarization: Analyzes robot movements and generates comprehensive
+   natural language summaries of the robot's behavior.
 
-# To summarize a trajectory from a specific episode
-python -m lerobot.cli.enrich_with_llm summarize --dataset_repo_id="lerobot/aloha_sim_transfer_cube_human" --episode_index=0
+3. Negative Example Generation: Produces contrastive examples showing common mistakes
+   and inefficient approaches to help robots learn what NOT to do.
 
-# To generate negative data for a task
-python -m lerobot.cli.enrich_with_llm generate_negatives --dataset_repo_id="lerobot/aloha_sim_transfer_cube_human"
+Usage:
+------
+# Generate rich captions for a trajectory
+lesynthesis generate-instructions --dataset lerobot/pusht --episode 0
+
+# Summarize a trajectory
+lesynthesis summarize --dataset lerobot/pusht --episode 0
+
+# Generate negative examples
+lesynthesis generate-negatives --dataset lerobot/pusht
 """
 
 import os
@@ -100,6 +111,7 @@ class CaptionSynthesizer:
         model_name: str = "gemini-2.5-flash-preview-05-20",
         api_key: str | None = None,
     ):
+        self.model_name = model_name
         self._model = _setup_generative_model(model_name, api_key)
         self._console = Console()
 

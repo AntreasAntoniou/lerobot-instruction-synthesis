@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Simple Flask server for the LeRobot LLM Enrichment Tool.
+Web server for LeSynthesis - provides REST API and web interface for caption synthesis.
 """
 
 from pathlib import Path

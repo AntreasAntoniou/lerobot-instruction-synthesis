@@ -9,7 +9,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from lesynthesis.synthesizer import LLMEnrichmentTool, main
+from lesynthesis.synthesizer import CaptionSynthesizer, main
 
 
 class TestCLIExamples:
@@ -23,10 +23,8 @@ class TestCLIExamples:
 
     @pytest.fixture
     def mock_llm_tool(self):
-        """Mock the LLMEnrichmentTool."""
-        with patch(
-            "lesynthesis.synthesizer.LLMEnrichmentTool"
-        ) as mock_class:
+        """Mock the CaptionSynthesizer."""
+        with patch("lesynthesis.synthesizer.CaptionSynthesizer") as mock_class:
             mock_instance = Mock()
             mock_class.return_value = mock_instance
 
@@ -62,13 +60,13 @@ class TestCLIExamples:
             yield mock_instance
 
     def test_main_function_calls_fire(self, mock_fire):
-        """Test that main() calls fire.Fire with LLMEnrichmentTool."""
+        """Test that main() calls fire.Fire with CaptionSynthesizer."""
         # Set API key for the test
         os.environ["GOOGLE_API_KEY"] = "test-key"
 
         try:
             main()
-            mock_fire.assert_called_once_with(LLMEnrichmentTool)
+            mock_fire.assert_called_once_with(CaptionSynthesizer)
         finally:
             if "GOOGLE_API_KEY" in os.environ:
                 del os.environ["GOOGLE_API_KEY"]
@@ -76,7 +74,7 @@ class TestCLIExamples:
     def test_generate_instructions_cli_simulation(self, mock_llm_tool):
         """Simulate the CLI command: lesynthesis generate-instructions --dataset lerobot/pusht --episode 0"""
         # This tests that the method can be called with the expected arguments
-        tool = LLMEnrichmentTool()
+        tool = CaptionSynthesizer()
 
         # Simulate CLI call
         result = tool.generate_instructions(
@@ -91,12 +89,10 @@ class TestCLIExamples:
 
     def test_enrich_dataset_simulation(self, mock_llm_tool):
         """Simulate batch processing of a dataset."""
-        tool = LLMEnrichmentTool()
+        tool = CaptionSynthesizer()
 
         # Mock dataset with multiple episodes
-        with patch(
-            "lesynthesis.synthesizer.LeRobotDataset"
-        ) as mock_dataset:
+        with patch("lesynthesis.synthesizer.LeRobotDataset") as mock_dataset:
             mock_dataset.return_value = Mock(
                 num_episodes=3,
                 episode_data_index={
@@ -137,7 +133,7 @@ class TestCLIExamples:
         """Simulate generating instructions with specific detail level."""
         # This is a conceptual test since detail level isn't implemented
         # but shows how it would work based on README
-        tool = LLMEnrichmentTool()
+        tool = CaptionSynthesizer()
 
         with patch.object(tool, "generate_instructions") as mock_generate:
             mock_generate.return_value = {
@@ -156,19 +152,16 @@ class TestCLIExamples:
 
     def test_server_command_simulation(self):
         """Test that the server can be started with custom port."""
-        from lesynthesis.synthesizer_server import main as server_main
+        from lesynthesis.web_server import main as server_main
 
-        with patch("lesynthesis.synthesizer_server.app.run") as mock_run:
-            with patch(
-                "lesynthesis.synthesizer_server.fire.Fire"
-            ) as mock_fire:
-                # Simulate the server being called with custom port
-                server_main(port=5001, host="0.0.0.0", debug=False)
+        with patch("lesynthesis.web_server.app.run") as mock_run:
+            # Simulate the server being called with custom port
+            server_main(port=5001, host="0.0.0.0", debug=False)
 
-                # Verify app.run was called with correct parameters
-                mock_run.assert_called_once_with(
-                    debug=False, host="0.0.0.0", port=5001
-                )
+            # Verify app.run was called with correct parameters
+            mock_run.assert_called_once_with(
+                debug=False, host="0.0.0.0", port=5001
+            )
 
 
 class TestCLIIntegration:
