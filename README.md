@@ -1,6 +1,6 @@
 # 🤖 LeRobot Instruction Synthesis
 
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
@@ -11,7 +11,7 @@ Transform simple robot action datasets into richly annotated training data using
 
 ### 🌟 Key Innovation
 
-Most robot datasets come with minimal descriptions like "pick up the cube" or "open the drawer". This severely limits the ability to train robots that can understand complex, narrative-style commands. **LeRobot Instruction Synthesis** solves this by:
+Most lerobot datasets come with minimal descriptions like "pick up the cube" or "open the drawer". This severely limits the ability to train robots that can understand complex, narrative-style commands. **LeRobot Instruction Synthesis** solves this by:
 
 - 📹 **Analyzing robot trajectory videos** using multi-modal LLMs (Gemini, Claude 3.5, GPT-4o)
 - 📝 **Generating rich, hierarchical captions** at multiple levels of detail
@@ -56,7 +56,7 @@ Low-Level:
 
 ### Prerequisites
 
-- Python 3.9 or higher
+- Python 3.11 or higher
 - Google Cloud API key (for Gemini LLM access)
 - (Optional) CUDA-capable GPU for faster inference with vLLM
 
