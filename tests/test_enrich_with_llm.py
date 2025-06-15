@@ -23,7 +23,7 @@ from unittest.mock import MagicMock, patch, Mock
 
 import pytest
 
-from lerobot.cli.enrich_with_llm import LLMEnrichmentTool
+from lesynthesis.enrich_with_llm import LLMEnrichmentTool
 
 # Skip all tests in this file if the GOOGLE_API_KEY is not set.
 pytestmark = pytest.mark.skipif(
