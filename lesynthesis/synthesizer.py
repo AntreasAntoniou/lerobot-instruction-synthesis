@@ -92,8 +92,8 @@ def _setup_generative_model(
     return ModelWrapper(client, model_name, safety_settings)
 
 
-class LLMEnrichmentTool:
-    """A tool for enriching LeRobot datasets with an LLM."""
+class CaptionSynthesizer:
+    """Synthesizes rich, multi-level captions for robot trajectories using LLMs."""
 
     def __init__(
         self,
