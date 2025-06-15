@@ -20,7 +20,7 @@ install-dev:
 	pre-commit install
 
 test:
-	pytest tests/ -v --cov=lesynthesis --cov-report=html --cov-report=term
+	pytest tests/ -v -n auto --cov=lesynthesis --cov-report=html --cov-report=term 
 
 lint:
 	ruff check lesynthesis/
