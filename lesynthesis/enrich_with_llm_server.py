@@ -30,7 +30,9 @@ llm_tool = LLMEnrichmentTool()
 def index():
     """Serve the HTML interface."""
     # Look for the HTML file in the project root
-    html_path = Path(__file__).parent.parent.parent / "enrich_with_llm_demo.html"
+    html_path = (
+        Path(__file__).parent.parent.parent / "enrich_with_llm_demo.html"
+    )
     return send_file(str(html_path))
 
 
@@ -76,8 +78,11 @@ def get_episode_video(episode_index):
     try:
         if len(current_dataset.meta.video_keys) > 0:
             video_key = current_dataset.meta.video_keys[0]
-            video_path = current_dataset.root / current_dataset.meta.get_video_file_path(
-                ep_index=episode_index, vid_key=video_key
+            video_path = (
+                current_dataset.root
+                / current_dataset.meta.get_video_file_path(
+                    ep_index=episode_index, vid_key=video_key
+                )
             )
 
             if video_path.exists():
@@ -99,9 +104,13 @@ def get_motor_plot(episode_index):
 
     try:
         # Get episode data
-        from_idx = current_dataset.episode_data_index["from"][episode_index].item()
+        from_idx = current_dataset.episode_data_index["from"][
+            episode_index
+        ].item()
         to_idx = current_dataset.episode_data_index["to"][episode_index].item()
-        episode_data = current_dataset.hf_dataset.select(range(from_idx, to_idx))
+        episode_data = current_dataset.hf_dataset.select(
+            range(from_idx, to_idx)
+        )
 
         # Extract action data
         actions = np.stack([a.numpy() for a in episode_data["action"]])
@@ -127,7 +136,9 @@ def get_motor_plot(episode_index):
             ax.set_ylim(actions[:, i].min() - 0.1, actions[:, i].max() + 0.1)
 
         axes[-1].set_xlabel("Time (seconds)", fontsize=12)
-        fig.suptitle(f"Motor Activations - Episode {episode_index}", fontsize=14)
+        fig.suptitle(
+            f"Motor Activations - Episode {episode_index}", fontsize=14
+        )
         plt.tight_layout()
 
         # Save to temporary file
@@ -163,7 +174,9 @@ def summarize_trajectory(episode_index):
         llm_tool._console.print = capture_print
 
         # Generate summary
-        llm_tool.summarize(dataset_repo_id=current_dataset_id, episode_index=episode_index)
+        llm_tool.summarize(
+            dataset_repo_id=current_dataset_id, episode_index=episode_index
+        )
 
         # Restore original print
         llm_tool._console.print = original_print
@@ -190,7 +203,9 @@ def generate_negatives():
         return jsonify({"success": False, "error": "No dataset loaded"})
 
     try:
-        negatives = llm_tool.generate_negatives(dataset_repo_id=current_dataset_id)
+        negatives = llm_tool.generate_negatives(
+            dataset_repo_id=current_dataset_id
+        )
 
         return jsonify({"success": True, "negatives": negatives})
 

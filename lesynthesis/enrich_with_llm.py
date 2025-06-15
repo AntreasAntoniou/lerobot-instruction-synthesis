@@ -47,10 +47,10 @@ from rich.panel import Panel
 try:
     from google import genai
     from google.genai import types
-except ImportError:
+except ImportError as e:
     raise ImportError(
         "Google Generative AI SDK not found. Please install it with: pip install google-generativeai"
-    )
+    ) from e
 
 # Try to import dotenv for .env file support
 try:
@@ -62,7 +62,9 @@ from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
 from lerobot.common.utils.utils import init_logging
 
 
-def _setup_generative_model(model_name: str, api_key: str | None = None) -> "genai.GenerativeModel":
+def _setup_generative_model(
+    model_name: str, api_key: str | None = None
+) -> "genai.GenerativeModel":
     """Configures and returns a Gemini generative model instance."""
     if load_dotenv:
         load_dotenv()
@@ -87,9 +89,6 @@ def _setup_generative_model(model_name: str, api_key: str | None = None) -> "gen
     # Create a client with the API key
     client = genai.Client(api_key=resolved_api_key)
 
-    # Get the model instance from the client
-    model = client.models.generate_content
-
     # Return a wrapper that includes the model name and safety settings
     class ModelWrapper:
         def __init__(self, client, model_name, safety_settings):
@@ -101,7 +100,9 @@ def _setup_generative_model(model_name: str, api_key: str | None = None) -> "gen
             return self.client.models.generate_content(
                 model=self.model_name,
                 contents=prompt,
-                config=types.GenerateContentConfig(safety_settings=self.safety_settings),
+                config=types.GenerateContentConfig(
+                    safety_settings=self.safety_settings
+                ),
             )
 
     return ModelWrapper(client, model_name, safety_settings)
@@ -163,7 +164,9 @@ Available modalities:
             ]:
                 shape = feature.get("shape", "N/A")
                 dtype = feature.get("dtype", "N/A")
-                trajectory_description += f"- {key}: shape={shape}, dtype={dtype}\n"
+                trajectory_description += (
+                    f"- {key}: shape={shape}, dtype={dtype}\n"
+                )
 
         # Add some sample data points
         trajectory_description += "\nSample data from first and last frames:\n"
@@ -175,9 +178,7 @@ Available modalities:
                 value = episode_data[key][0]
                 if hasattr(value, "numpy"):
                     value = value.numpy()
-                trajectory_description += (
-                    f"  {key}: {np.array(value)[:5]}... (showing first 5 values)\n"
-                )
+                trajectory_description += f"  {key}: {np.array(value)[:5]}... (showing first 5 values)\n"
 
         # Last frame
         trajectory_description += f"\nLast frame (t={episode_length-1}):\n"
@@ -186,9 +187,7 @@ Available modalities:
                 value = episode_data[key][-1]
                 if hasattr(value, "numpy"):
                     value = value.numpy()
-                trajectory_description += (
-                    f"  {key}: {np.array(value)[:5]}... (showing first 5 values)\n"
-                )
+                trajectory_description += f"  {key}: {np.array(value)[:5]}... (showing first 5 values)\n"
 
         prompt = f"""
 Please provide a comprehensive summary of this robotic trajectory:
@@ -223,13 +222,17 @@ Please be concise but informative.
         Args:
             dataset_repo_id: The ID of the LeRobot dataset on the Hugging Face Hub.
         """
-        self._console.print("[bold cyan]Task: Pitfall Generation (Negative Examples)[/bold cyan]")
+        self._console.print(
+            "[bold cyan]Task: Pitfall Generation (Negative Examples)[/bold cyan]"
+        )
         dataset = LeRobotDataset(dataset_repo_id)
 
         # Get all unique tasks from the dataset
         unique_tasks = list(set(dataset.meta.tasks.values()))
 
-        self._console.print(f"Found {len(unique_tasks)} unique task(s) in the dataset:")
+        self._console.print(
+            f"Found {len(unique_tasks)} unique task(s) in the dataset:"
+        )
         for i, task in enumerate(unique_tasks):
             self._console.print(f"  {i+1}. {task}")
 
@@ -255,7 +258,9 @@ Format your response EXACTLY like this example:
 
 Now generate the pitfalls for the given task:"""
 
-            self._console.print("\n[yellow]Sending prompt to Gemini...[/yellow]")
+            self._console.print(
+                "\n[yellow]Sending prompt to Gemini...[/yellow]"
+            )
             response = self._model.generate_content(prompt)
 
             all_negatives[task_description] = response.text.strip()
@@ -270,7 +275,9 @@ Now generate the pitfalls for the given task:"""
 
         return all_negatives
 
-    def generate_instructions(self, dataset_repo_id: str, episode_index: int = 0) -> dict:
+    def generate_instructions(
+        self, dataset_repo_id: str, episode_index: int = 0
+    ) -> dict:
         """
         Generate multi-level instructional descriptions for a robot trajectory.
 
@@ -349,7 +356,9 @@ Trajectory Phases (based on action analysis):
             if change > np.mean(action_stats["std"]):
                 phase_changes.append((i, i / fps, change))
 
-        for i, (frame, time, change) in enumerate(phase_changes[:5]):  # Show up to 5 phases
+        for i, (frame, time, change) in enumerate(
+            phase_changes[:5]
+        ):  # Show up to 5 phases
             trajectory_info += f"- Phase {i+1}: Around {time:.1f}s (frame {frame}), significant change detected (magnitude: {change:.3f})\n"
 
         # Create the prompt for multi-level instructions
@@ -378,7 +387,9 @@ Requirements:
 - Be specific and technical
 - Focus on what the robot should do, not meta-commentary"""
 
-        self._console.print("\n[yellow]Generating multi-level instructions...[/yellow]")
+        self._console.print(
+            "\n[yellow]Generating multi-level instructions...[/yellow]"
+        )
         response = self._model.generate_content(prompt)
 
         instructions_text = response.text.strip()
@@ -392,7 +403,9 @@ Requirements:
         }
 
         # Debug: print first part of response to see format
-        self._console.print("\n[dim]Debug - First 500 chars of response:[/dim]")
+        self._console.print(
+            "\n[dim]Debug - First 500 chars of response:[/dim]"
+        )
         self._console.print(Panel(instructions_text[:500], border_style="dim"))
 
         # More robust parsing with regex
@@ -463,7 +476,9 @@ Requirements:
                 content = mid_level_section.group(1).strip()
                 # Extract phase descriptions
                 phase_pattern = r"\*?\s*\*?\*?Phase\s*\d+[:\s]([^*\n]+(?:\n[^*\n]+)*?)(?=\*?\s*\*?\*?Phase|\n\n|$)"
-                phases = re.findall(phase_pattern, content, re.MULTILINE | re.IGNORECASE)
+                phases = re.findall(
+                    phase_pattern, content, re.MULTILINE | re.IGNORECASE
+                )
 
                 for phase in phases:
                     # Clean up the phase description
@@ -526,7 +541,9 @@ Requirements:
                 else:
                     # Try alternative format with just step descriptions
                     step_pattern = r"\*?\s*\*?\*?Step\s*\d+[:\s]([^*\n]+(?:\n[^*\n]+)*?)(?=\*?\s*\*?\*?Step|\n\n|$)"
-                    steps = re.findall(step_pattern, content, re.MULTILINE | re.IGNORECASE)
+                    steps = re.findall(
+                        step_pattern, content, re.MULTILINE | re.IGNORECASE
+                    )
                     for step in steps:
                         step_text = step.strip()
                         # Remove timing info if present
@@ -542,13 +559,19 @@ Requirements:
 
         # Final cleanup for all instructions
         if instructions["high_level"]:
-            instructions["high_level"] = instructions["high_level"].strip().rstrip(".")
+            instructions["high_level"] = (
+                instructions["high_level"].strip().rstrip(".")
+            )
 
         # Remove duplicates and clean up lists
-        instructions["mid_level"] = [item for item in instructions["mid_level"] if item][
+        instructions["mid_level"] = [
+            item for item in instructions["mid_level"] if item
+        ][
             :5
         ]  # Max 5 phases
-        instructions["low_level"] = [item for item in instructions["low_level"] if item][
+        instructions["low_level"] = [
+            item for item in instructions["low_level"] if item
+        ][
             :15
         ]  # Max 15 steps
 
@@ -561,7 +584,9 @@ Requirements:
             )
         )
 
-        mid_level_text = "\n".join(f"• {inst}" for inst in instructions["mid_level"])
+        mid_level_text = "\n".join(
+            f"• {inst}" for inst in instructions["mid_level"]
+        )
         self._console.print(
             Panel(
                 f"[bold yellow]MID-LEVEL PHASES:[/bold yellow]\n{mid_level_text}",
@@ -574,7 +599,9 @@ Requirements:
             f"• {inst}" for inst in instructions["low_level"][:10]
         )  # Show first 10
         if len(instructions["low_level"]) > 10:
-            low_level_text += f"\n... and {len(instructions['low_level']) - 10} more steps"
+            low_level_text += (
+                f"\n... and {len(instructions['low_level']) - 10} more steps"
+            )
 
         self._console.print(
             Panel(
