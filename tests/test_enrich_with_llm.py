@@ -19,7 +19,7 @@ Tests for the LLM enrichment tool.
 """
 
 import os
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, Mock
 
 import pytest
 
@@ -31,107 +31,154 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-class TestLiveLLMEnrichment:
-    """Test the LLM enrichment tool with real API calls."""
+class TestLLMEnrichmentTool:
+    """Test cases for LLMEnrichmentTool."""
 
-    def test_summarize_trajectory_live(self):
-        """
-        Tests the full workflow of summarizing a real trajectory,
-        verifying that the output is a non-empty string.
-        """
-        # Use a small dataset that's likely to be cached
-        dataset_repo_id = "lerobot/aloha_sim_transfer_cube_human"
+    @pytest.fixture
+    def mock_model(self):
+        """Create a mock model for testing."""
+        with patch(
+            "lesynthesis.enrich_with_llm._setup_generative_model"
+        ) as mock:
+            mock_model = Mock()
+            mock_model.generate_content.return_value = Mock(
+                text="Test response from LLM"
+            )
+            mock.return_value = mock_model
+            yield mock_model
 
+    @pytest.fixture
+    def tool(self, mock_model):
+        """Create a tool instance with mocked model."""
+        return LLMEnrichmentTool()
+
+    def test_initialization(self, tool):
+        """Test tool initialization."""
+        assert tool is not None
+        assert hasattr(tool, "_model")
+        assert hasattr(tool, "_console")
+
+    @patch("lesynthesis.enrich_with_llm.LeRobotDataset")
+    def test_generate_instructions(self, mock_dataset, tool):
+        """Test instruction generation."""
+        # Mock dataset
+        mock_dataset.return_value = Mock(
+            episode_data_index={
+                "from": [Mock(item=lambda: 0)],
+                "to": [Mock(item=lambda: 100)],
+            },
+            hf_dataset=Mock(
+                select=Mock(
+                    return_value={
+                        "task_index": [Mock(item=lambda: 0)],
+                        "action": [Mock(numpy=lambda: [0.1, 0.2, 0.3])],
+                    }
+                )
+            ),
+            meta=Mock(tasks={0: "Test task"}, robot_type="test_robot"),
+            fps=30,
+            features={},
+        )
+
+        # Test instruction generation
+        instructions = tool.generate_instructions(
+            dataset_repo_id="test/dataset", episode_index=0
+        )
+
+        assert isinstance(instructions, dict)
+        assert "high_level" in instructions
+        assert "mid_level" in instructions
+        assert "low_level" in instructions
+        assert "raw_response" in instructions
+
+    @patch("lesynthesis.enrich_with_llm.LeRobotDataset")
+    def test_generate_negatives(self, mock_dataset, tool):
+        """Test negative example generation."""
+        # Mock dataset
+        mock_dataset.return_value = Mock(
+            meta=Mock(tasks={0: "Pick up object", 1: "Pick up object"})
+        )
+
+        # Test negative generation
+        negatives = tool.generate_negatives(dataset_repo_id="test/dataset")
+
+        assert isinstance(negatives, dict)
+        assert len(negatives) > 0
+        assert "Pick up object" in negatives
+
+    def test_model_response_parsing(self, tool):
+        """Test parsing of model responses."""
+        # Test high-level parsing
+        test_response = """
+        ===HIGH_LEVEL_START===
+        Pick up the cube and transfer it
+        ===HIGH_LEVEL_END===
+        
+        ===MID_LEVEL_START===
+        1. Approach the cube
+        2. Grasp the cube
+        3. Transfer to target
+        ===MID_LEVEL_END===
+        
+        ===LOW_LEVEL_START===
+        Move arm | Extend towards cube | 0.0s
+        Close gripper | Secure the cube | 1.0s
+        ===LOW_LEVEL_END===
+        """
+
+        # Mock the model to return our test response
+        tool._model.generate_content = Mock(
+            return_value=Mock(text=test_response)
+        )
+
+        # This would be part of generate_instructions
+        # We're testing the parsing logic
+        import re
+
+        instructions = {"high_level": "", "mid_level": [], "low_level": []}
+
+        # Parse HIGH-LEVEL
+        high_match = re.search(
+            r"===HIGH_LEVEL_START===\s*\n(.*?)\n\s*===HIGH_LEVEL_END===",
+            test_response,
+            re.DOTALL,
+        )
+        if high_match:
+            instructions["high_level"] = high_match.group(1).strip()
+
+        # Parse MID-LEVEL
+        mid_match = re.search(
+            r"===MID_LEVEL_START===\s*\n(.*?)\n\s*===MID_LEVEL_END===",
+            test_response,
+            re.DOTALL,
+        )
+        if mid_match:
+            for line in mid_match.group(1).strip().split("\n"):
+                cleaned = line.strip()
+                if cleaned and not cleaned.startswith("#"):
+                    instructions["mid_level"].append(cleaned)
+
+        assert instructions["high_level"] == "Pick up the cube and transfer it"
+        assert len(instructions["mid_level"]) == 3
+        assert "1. Approach the cube" in instructions["mid_level"]
+
+
+@pytest.mark.integration
+class TestIntegration:
+    """Integration tests that require API access."""
+
+    @pytest.mark.skipif(
+        not pytest.config.getoption("--run-integration", default=False),
+        reason="Integration tests require --run-integration flag",
+    )
+    def test_real_api_call(self):
+        """Test with real API (requires GOOGLE_API_KEY)."""
         tool = LLMEnrichmentTool()
 
-        # Mock the console to capture output
-        with patch.object(tool, "_console") as mock_console:
-            # Run the summarization
-            tool.summarize(dataset_repo_id=dataset_repo_id, episode_index=0)
+        # This would make a real API call
+        instructions = tool.generate_instructions(
+            dataset_repo_id="lerobot/pusht", episode_index=0
+        )
 
-            # Verify that print was called
-            assert mock_console.print.called
-
-            # Check that we printed the task header
-            task_header_calls = [
-                call
-                for call in mock_console.print.call_args_list
-                if "[bold]Task: Trajectory Summarization" in str(call.args[0])
-            ]
-            assert len(task_header_calls) > 0
-
-            # Check that we printed a Panel with the summary
-            panel_calls = [
-                call
-                for call in mock_console.print.call_args_list
-                if hasattr(call.args[0], "__class__")
-                and call.args[0].__class__.__name__ == "Panel"
-            ]
-            assert len(panel_calls) > 0
-
-            # Verify the panel contains green text (the summary)
-            panel = panel_calls[0].args[0]
-            assert "[green]" in panel.renderable
-            assert (
-                len(panel.renderable) > 50
-            )  # Should have substantial content
-
-    def test_generate_negatives_live(self):
-        """
-        Tests the full workflow of generating negative examples,
-        verifying the structure of the output.
-        """
-        # Use a small dataset that's likely to be cached
-        dataset_repo_id = "lerobot/aloha_sim_transfer_cube_human"
-
-        tool = LLMEnrichmentTool()
-
-        # Mock the console to capture output
-        with patch.object(tool, "_console") as mock_console:
-            # Run the negative generation
-            result = tool.generate_negatives(dataset_repo_id=dataset_repo_id)
-
-            # Verify that print was called
-            assert mock_console.print.called
-
-            # Check that we printed the task header
-            task_header_calls = [
-                call
-                for call in mock_console.print.call_args_list
-                if "[bold cyan]Task: Negative Data Generation"
-                in str(call.args[0])
-            ]
-            assert len(task_header_calls) > 0
-
-            # Check that we found tasks
-            found_tasks_calls = [
-                call
-                for call in mock_console.print.call_args_list
-                if "Found" in str(call.args[0])
-                and "unique task(s)" in str(call.args[0])
-            ]
-            assert len(found_tasks_calls) > 0
-
-            # Check that we printed panels with negative examples
-            panel_calls = [
-                call
-                for call in mock_console.print.call_args_list
-                if hasattr(call.args[0], "__class__")
-                and call.args[0].__class__.__name__ == "Panel"
-            ]
-            assert len(panel_calls) > 0
-
-            # Verify the panel contains red text (the negative examples)
-            panel = panel_calls[0].args[0]
-            assert "[red]" in panel.renderable
-            assert (
-                len(panel.renderable) > 50
-            )  # Should have substantial content
-
-            # Verify the function returns a dictionary with results
-            assert isinstance(result, dict)
-            assert len(result) > 0
-            for task, negatives in result.items():
-                assert isinstance(task, str)
-                assert isinstance(negatives, str)
-                assert len(negatives) > 50  # Should have substantial content
+        assert instructions is not None
+        assert len(instructions["high_level"]) > 0

@@ -19,6 +19,3 @@ flask>=3.0.0
 flask-cors>=4.0.0
 gradio>=4.0.0
 lerobot>=0.1.0
-
-# Optional: For GPU-accelerated inference
-# vllm>=0.2.0 
