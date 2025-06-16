@@ -43,12 +43,16 @@ def load_dataset():
         data = request.json
         dataset_id = data.get("dataset_id")
 
+        print(f"Loading dataset: {dataset_id}")
+
         current_dataset = LeRobotDataset(dataset_id)
         current_dataset_id = dataset_id
 
         # Get dataset info
         num_episodes = current_dataset.num_episodes
         tasks = list(set(current_dataset.meta.tasks.values()))
+
+        print(f"Dataset loaded successfully: {num_episodes} episodes")
 
         return jsonify(
             {
@@ -62,6 +66,10 @@ def load_dataset():
         )
 
     except Exception as e:
+        print(f"Error loading dataset: {e}")
+        import traceback
+
+        traceback.print_exc()
         return jsonify({"success": False, "error": str(e)})
 
 

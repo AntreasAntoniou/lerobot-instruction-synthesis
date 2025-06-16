@@ -603,7 +603,8 @@
     </footer>
     
     <script>
-        const API_BASE = 'http://localhost:7777';
+        // Use the current page's origin to determine the API base URL
+        const API_BASE = window.location.origin;
         let currentDataset = null;
         
         function showStatus(message, type = 'info') {
