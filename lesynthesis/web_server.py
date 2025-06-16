@@ -257,7 +257,7 @@ def main(port: int = 7777, host: str = "0.0.0.0", debug: bool = False):
         host: Host to bind to (default: 0.0.0.0)
         debug: Run in debug mode (default: False)
     """
-    print(f"Starting LeRobot Instruction Synthesis Server...")
+    print("Starting LeRobot Instruction Synthesis Server...")
     print(f"Open http://localhost:{port} in your browser")
     app.run(debug=debug, host=host, port=port)
 
